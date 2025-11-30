@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class Driver : MonoBehaviour
 {
@@ -8,12 +9,37 @@ public class Driver : MonoBehaviour
     [SerializeField] float steerSpeed = 0.1f;
     [SerializeField] float acceleration = 5f;
     [SerializeField] float deceleration = 10f;
+    [SerializeField] float boostSpeed = 1f;
+    [SerializeField] float speed = 0.5f;
+    [SerializeField] TMP_Text boostText;
     private float previousMoveSpeed;
     private float maxMoveSpeed = 10f;
+    // Cache 2D physics components for better performance and correct API usage
+    Rigidbody2D rb2d;
+    Collider2D col2d;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        rb2d = GetComponent<Rigidbody2D>();
+        col2d = GetComponent<Collider2D>();
+        boostText.gameObject.SetActive(false);
 
+    }
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.CompareTag("Boost"))
+        {
+            moveSpeed = boostSpeed;
+            boostText.gameObject.SetActive(true);
+            Destroy(collision.gameObject);
+
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+       moveSpeed = speed;
+       boostText.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -56,6 +82,7 @@ public class Driver : MonoBehaviour
         {
             steer = -1f;
         }
+
         previousMoveSpeed = move;
 
         move = move * moveSpeed * Time.deltaTime;
